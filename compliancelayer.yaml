@@ -1,0 +1,494 @@
+openapi: '3.0.0' # OpenAPI Specs
+# External API documentation.
+externalDocs:
+  description: 'API Documentation'
+  url: 'https://compliancelayer.com/docs'
+# Metadata about the API. The metadata may be used by tooling as required.
+info:
+  title: 'api.compliancelayer' # Title of the application
+  version: '1.0.0-beta' # API version
+  contact: # Information of contact person/organization
+    name: 'Compliancelayer'
+    email: 'support@compliancelayer.com'
+    url: 'https://compliancelayer.com'
+  license:
+    name: 'MIT License'
+    url: 'https://github.com/compliancelayer/api.compliancelayer/blob/master/LICENSE'
+  termsOfService: 'http://compliancelayer.com/terms-of-service/'
+  description: >-
+    # Compliancelayer API
+
+    ***Compliancelayer*** is a RESTful API where businesses are able to check
+    their clients against global sanctions and watchlists.
+
+
+    The API comes with multiple endpoints, each serving a different use case.
+    Endpoint functionalities include monitoring individuals or entities for all
+    or a specific set of the lists, getting legistlation data of 190 countries,
+    retrieving PEP & RCA and querying the API for batch screening.
+
+
+    ### Quickstart Tool
+
+    No time for long documentation articles? We've got you covered - in the
+    Dashboard section of your control panel you will be able to access our
+    Quickstart tool and test all API endpoints at the click of a button.
+
+
+    Sign up for a free using the button below to use the Compliancelayer
+    Quickstart tool.
+
+
+    [`Try FREE`](https://compliancelayer.com/signup)
+
+
+    ## Getting Started
+
+    ### Definitions
+
+    | Definition | Description           |
+
+    | ---------- | --------------------- |
+
+    | API Key    | A unique key assigned to each API account used to
+    authenticate with the API. |
+
+    |
+
+
+    ## SSL Connection
+
+    All paid subscription plans available on compliancelayer.com come with
+    256-bit SSL encryption. To connect to the API via SSL, simply use the
+    `https` protocol instead of standard `http`.
+
+# An array of Server Objects, which provide connectivity information to a target server
+servers:
+  - url: '{protocol}://api.compliancelayer.com/v1'
+    description: 'Production server (uses live data)'
+    variables:
+      protocol:
+        enum:
+          - http
+          - https
+          - wss
+        default: https
+  - url: 'https://virtserver.swaggerhub.com/compliancelayer/api/1.0.0-beta'
+    description: 'Sandbox server (uses test data)'
+# Root level properties
+security:
+  - apiKeyQuery: []
+  - apiKeyHeader: []
+paths:
+  /{monitor}:
+    summary: Scans names against lists.
+    description: write later # <-----
+    get:
+      tags:
+        - 'Endpoints'
+      operationId: getMonitor
+      summary: Check given name against lists.
+      description: >
+        Scan can be name, dob, nationality etc.
+      parameters:
+        - in: path
+          name: monitor
+          required: true
+          description: Person or entity name to monitor
+          schema:
+            $ref: '#/components/schemas/Monitor'
+          example: 'Mulla Omar'
+        - in: query
+          name: base
+          description: >
+            Three letter [jurisdiction](#/jurisdictions/getJurisdiction) code. This monitors person or entity at selected jurisdiction.
+          schema:
+            $ref: '#/components/schemas/SourceBase'
+        - in: query
+          name: source_type
+          description: 'Limits search in specific type of lists; restricted, PEP, UBO.'
+          schema:
+            $ref: '#/components/schemas/ListClass'
+        - in: query
+          name: source
+          description: 'Refers to the abbreviation of a given list eg. OFAC-SDN, UN.'
+          schema:
+            $ref: '#/components/schemas/AbbrList'
+        - in: query
+          name: fuzzy_mode
+          description: Enables fuzzy mode
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetLists'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/GetLists'
+        default:
+          $ref: '#/components/responses/Default'
+
+  # Displays all supported lists, their name, shortname, description, jurisdiction, class, update date, control date and total records
+  /lists:
+    summary: Returns all available lists
+    description: write later # <-----
+    get:
+      tags:
+        - 'Endpoints'
+      operationId: getLists
+      summary: 'Get all available lists.'
+      description: >
+        Available lists and their attributes at compliancelayer can listed in details.
+      parameters:
+        - in: query
+          name: base # <---- source_base
+          description: >
+            Three letter [jurisdiction](#/jurisdictions/getJurisdiction) code of the lists. This limits query to selected jurisdiction.
+          schema:
+            $ref: '#/components/schemas/SourceBase'
+          example: 'GBR'
+          style: form
+          explode: false
+        - in: query
+          name: class # <---- source_class
+          description: >
+            Limits search in specific class of lists; restricted, **PEP**, UBO.
+          schema:
+            $ref: '#/components/schemas/ListClass'
+          example: 'PEP'
+          style: form
+          explode: false
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetLists'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/GetLists'
+        '401':
+          description: API key is missing or invalid
+        default:
+          $ref: '#/components/responses/Default'
+  # Jurisdictions
+  /jurisdictions:
+    get:
+      tags:
+        - 'Endpoints'
+      operationId: getJurisdiction
+      summary: 'Returns all available jurisdictions.'
+      description: Returns all supported jurisdictions
+      parameters:
+        - in: query
+          name: limit_by
+          description: 'Limit query in specific class'
+          schema:
+            $ref: '#/components/schemas/ListClass'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetJurisdictions'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/GetJurisdictions'
+        '401':
+          description: 'API key is missing or invalid'
+        default:
+          $ref: '#/components/responses/Default'
+  # Decision making algorithms
+  /assessments:
+    get:
+      tags:
+        - 'Endpoints'
+      operationId: getAssessment
+      summary: 'Assess.'
+      description: Compliance self-assessment for transaction according to global, regional and local legislations. It will show regulatory requirements, sar/str conditions, limits etc.
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAssessments'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/GetAssessments'
+        default:
+          $ref: '#/components/responses/Default'
+  /usage:
+    get:
+      tags:
+        - 'User'
+      operationId: getUsage
+      summary: 'API usage and credit.'
+      description: Returns user's API usage and credit
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUsage'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/GetUsage'
+        default:
+          $ref: '#/components/responses/Default'
+# Tags used by the specification with additional metadata
+tags:
+  - name: 'Endpoints'
+    description: 'Core and premium features; scan (watchlist, pep, rca, ubo)'
+    externalDocs:
+      url: 'https://compliancelayer.com/docs/v1/#Endpoints'
+      description: 'Endpoints documentation'
+  - name: 'Attributes'
+    description: 'Attribute descriptions of a parameter in an API call'
+  - name: 'Admin'
+    description: 'Secured admin-only call such as whitelist creation, account balance'
+
+components:
+  # Authentication
+  securitySchemes:
+    apiKeyQuery:
+      in: query
+      name: access_key
+      type: apiKey
+      description: 'A unique key assigned to each API account used to authenticate with the API'
+    apiKeyHeader:
+      in: header
+      name: X-API-Key
+      type: apiKey
+  # ListBases
+  schemas:
+    Monitor:
+      type: string
+      description: Individual or entity name
+      example: 'John Doe'
+    AbbrList:
+      type: array
+      uniqueItems: true
+      items:
+        type: string
+        enum: [OFAC-SDN,UN,WB,METI]
+    SourceBase:
+      type: array
+      uniqueItems: true
+      items:
+        type: string
+        minLength: 3
+        maxLength: 3
+        pattern: '^[A-Z]{3}$'
+        enum: [INT,USA,TUR,JAP,GER,EUR,UAE,CHN]
+    ListClass:
+      type: array
+      uniqueItems: true
+      items:
+        type: string
+        enum: [ALL,SANCTION,WATCH,PEP,UBO,CRIMINAL,ADMINISTRATIVE]
+      default: 'ALL'
+    GetLists: # Response (200) schema
+      type: object
+      properties:
+        id:
+          type: integer
+          description: List ID.
+          example: 101
+        name:
+          type: string
+          description: List name
+          example: 'OFAC Specially Designated Nationals'
+        abbr: # <----- acronym
+          type: string
+          description: Short name of the list
+          example: OFAC-SDN
+        jurisdiction:
+          type: string
+          minLength: 3
+          maxLength: 3
+          pattern: '^[A-Z]{3}$'
+          description: Three letter code of published list's jurisdiction.
+          example: USA
+        class:
+          type: string
+          pattern: '^[A-Z]{2,}$'
+          description: List class
+          example: SANCTION
+        modifiedDate:
+          type: string
+          format: date
+          description: Last modified date of the list by jurisdiction
+        lastUpdate:
+          properties:
+            timestamp:
+              type: integer
+              format: int32
+              description: Last update timestamp of the list
+              example: 1557945837
+            humanDate:
+              type: string
+              format: date-time
+              description: Last update date of the list
+        totalRecords:
+          type: integer
+          description: Total records in the list
+          example: 7250
+        description:
+          type: string
+          description: Description of the list
+          example: >
+            List of individuals and companies owned or controlled by, or acting for or on behalf of, targeted countries. It also lists individuals, groups, and entities, such as terrorists and narcotics traffickers designated under programs that are not country-specific. Collectively, such individuals and companies are called 'Specially Designated Nationals' or 'SDNs.' Their assets are blocked and U.S. persons are generally prohibited from dealing with them.
+    GetJurisdictions: # Response (200) schema
+      type: object
+      properties:
+        code:
+          type: string
+          description: Three letter code
+          example: JAP
+        jurisdiction:
+          type: string
+          description: Law/policy zone
+          example: Japan
+        listCount:
+          type: integer
+          format: int16
+          description: Three letter code
+          example: 2
+        lists:
+          properties:
+            METI:
+              type: string
+              description: List names
+              example: End User List
+            PEP:
+              type: string
+              description: Japanese politicians
+              example: Ministry of cabinet
+            PEP-RCA:
+              type: string
+              description: Japanese politicians relatives and close associates
+              example: Relatives and close associates
+        isEu:
+          type: string
+          description: Country is a member of European Union
+          example: false
+        isHighRisk:
+          description: Country listed as high-risk by jurisdiction by EU or FATF
+          properties:
+            EU:
+              type: boolean
+              example: false
+            FATF:
+              type: boolean
+              example: false
+        hasAmlPolicy:
+          type: boolean
+          description: Country has effective AML policy
+          example: true
+        cpiRate:
+          type: string
+          pattern: '^[1-9][0-9]{0,2}\/100$'
+          description: Transparency International's Corruption Perception Index
+          example: 73/100
+        isFsrbMember:
+          description: Country member of FATF or FATF-style regional body
+          properties:
+            FATF:
+              type: boolean
+              example: true
+            FSRB:
+              type: boolean
+              example: true
+            memberOf:
+              type: string
+              example: FATF, APG
+        fiu:
+          description: 'Specialised government authority, referred to as Financial Intelligence Unit. FIU is defined as: A central, national agency responsible for receiving (and as permitted, requesting), analyzing and disseminating to the competent authorities, disclosures of financial information.'
+          properties:
+            name:
+              type: string
+              description: Financial intelligence unit name
+              example: "Japan Financial Intelligence Center"
+            abbr:
+              type: string
+              description: Financial intelligence unit abbreviation
+              example: "JAFIC"
+            local_name:
+              type: string
+              description: Financial intelligence unit local name
+              example: "犯罪収益移転防止対策室"
+            url:
+              type: string
+              format: uri
+              description: Website of Central Bank
+              example: http://www.npa.go.jp/sosikihanzai/jafic/index_e.htm
+            isEgmontGroupMember:
+              type: string
+              description: Membership by country's Financial Intelligence Unit (FIU)
+              example: true
+        centralBank:
+          properties:
+            name:
+              type: string
+              description: Central Bank Name
+              example: "Bank of Japan"
+            local_name:
+              type: string
+              description: Central Bank Local Name
+              example: "日本銀行"
+            url:
+              type: string
+              format: uri
+              description: Website of Central Bank
+              example: http://www.boj.or.jp/en/index.htm/
+            isBaselMember:
+              type: string
+              description: Bank for International Settlements membership by country's central bank
+              example: true
+    GetAssessments:
+      type: object
+      properties:
+        currency_pairs:
+          type: string
+          description: Sender & receiver currencies
+          example: EURINR
+        amount:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+          description: Sender amount
+          example: 250
+        corridor:
+          type: string
+          description: Sender & receiver alpha-2 country code
+          example: GEIN
+    GetUsage:
+      type: object
+      properties:
+        api_call:
+          type: integer
+          format: int16
+          description: API usage
+          example: 118
+        batch_count:
+          type: integer
+          format: int16
+          description: API batch usage
+          example: 250
+        cap:
+          type: integer
+          format: int16
+          description: API call limit
+          example: 1500
+  # Responses
+  responses:
+    Default:
+      description: 'Query format or parameters missing'
