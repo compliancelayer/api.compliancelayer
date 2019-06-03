@@ -19,7 +19,7 @@ info:
     # Compliancelayer API
 
     ***Compliancelayer*** is a RESTful API where businesses are able to check
-    their clients against global sanctions, watchlists.
+    their clients against global sanctions, watchlists etc..
 
 
     The API comes with multiple endpoints, each serving a different use case.
